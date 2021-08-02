@@ -19,6 +19,7 @@ type AddAccountBalanceParams struct {
 	ID     int64 `json:"id"`
 }
 
+// amount, id 将是生成的参数的名称
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, addAccountBalance, arg.Amount, arg.ID)
 	var i Account

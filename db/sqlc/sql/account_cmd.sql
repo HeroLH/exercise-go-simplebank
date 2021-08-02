@@ -12,6 +12,7 @@ SET balance = $2
 WHERE id = $1
 RETURNING *;
 
+-- amount, id 将是生成的参数的名称
 -- name: AddAccountBalance :one
 UPDATE accounts
 SET balance = balance + sqlc.arg(amount)

@@ -58,6 +58,8 @@ type TransferTxResult struct {
 	ToEntry     db.Entry    `json:"to_entry"`
 }
 
+var TxKey = struct {}{}
+
 // TransferTx performs a money transfer from one account to the other.
 // It creates the transfer, add account entries, and update accounts' balance within a database transaction
 func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
@@ -65,7 +67,9 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 	err := store.execTx(ctx, func(q *db.Queries) error {
 		var err error
+		txName := ctx.Value(TxKey)
 
+		fmt.Println(txName, ": create transfer")
 		result.Transfer, err = q.CreateTransfer(ctx, db.CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
 			ToAccountID:   arg.ToAccountID,
@@ -75,6 +79,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 			return err
 		}
 
+		fmt.Println(txName, ": create entity1")
 		result.FromEntry, err = q.CreateEntry(ctx, db.CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount,
@@ -83,6 +88,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 			return err
 		}
 
+		fmt.Println(txName, ": create entity2")
 		result.ToEntry, err = q.CreateEntry(ctx, db.CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,

@@ -23,8 +23,10 @@ func TestTransferTx(t *testing.T) {
 
 	// run n concurrent transfer transaction
 	for i := 0; i < n; i++ {
+		txName := fmt.Sprintf("tx %d", n)
 		go func() {
-			result, err := store.TransferTx(context.Background(), db.TransferTxParams{
+			ctx := context.WithValue(context.Background(), db.TxKey, txName)
+			result, err := store.TransferTx(ctx, db.TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -102,5 +104,15 @@ func TestTransferTx(t *testing.T) {
 		existed[k] = true
 	}
 
+	// check the final updated balance
+	updatedAccount1, err := store.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
 
+	updatedAccount2, err := store.GetAccount(context.Background(), account2.ID)
+	require.NoError(t, err)
+
+	fmt.Println(">> after:", updatedAccount1.Balance, updatedAccount2.Balance)
+
+	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
 }
