@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"exercise-go-simplebank/db/sqlc/db"
 	_ "github.com/lib/pq"
+	"log"
 	"os"
 	"testing"
 )
@@ -14,13 +15,17 @@ const (
 )
 
 var testQueries *db.Queries
+var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSourcec)
+	var err error
+	testDB, err = sql.Open(dbDriver, dbSourcec)
 	if err != nil {
+		log.Fatal("cannot connect to db: ", err)
 		return
 	}
-	testQueries = db.New(conn)
+
+	testQueries = db.New(testDB)
 
 	os.Exit(m.Run())
 }
